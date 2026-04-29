@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+transformers==4.41.2
+torch
+requests
+python-dotenv
+pillow
+pdf2image
+python-docx
+pymupdf
+pytesseract
+accelerate
+bitsandbytes
