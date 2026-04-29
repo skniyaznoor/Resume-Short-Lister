@@ -14,7 +14,6 @@ async def analyze_document(file: UploadFile = File(...)):
     if not file:
         raise HTTPException(status_code=400, detail="No file uploaded")
     
-    # Save the file temporarily
     file_ext = file.filename.split(".")[-1]
     temp_file_name = f"{uuid.uuid4()}.{file_ext}"
     temp_file_path = os.path.join(UPLOAD_DIR, temp_file_name)
@@ -32,7 +31,6 @@ async def analyze_document(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        # Clean up temp file
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 

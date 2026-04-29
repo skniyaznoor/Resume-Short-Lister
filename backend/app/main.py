@@ -7,17 +7,15 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Preload models asynchronously (offload to threadpool)
     from fastapi.concurrency import run_in_threadpool
     await run_in_threadpool(document_service.preload_models)
     yield
-    # Cleanup if necessary
-
+    
 app = FastAPI(title="DocIntel AI API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Simplified for development
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

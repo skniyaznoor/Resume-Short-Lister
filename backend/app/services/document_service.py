@@ -21,7 +21,6 @@ class DocumentService:
         
         self.classification_labels = ["Invoice", "Receipt", "Form", "Letter", "Notes", "Official Document", "Legal Document"]
         
-        # Mapping from xlm-roberta detection codes to NLLB codes
         self.lang_map = {
             "en": "eng_Latn",
             "hi": "hin_Deva",
@@ -37,7 +36,7 @@ class DocumentService:
             "zh": "zho_Hans"
         }
         
-        self.MAX_INPUT_CHARS = 15000  # Safety limit for total document processing
+        self.MAX_INPUT_CHARS = 15000 
 
     def preload_models(self):
         """Preload all models to avoid first-request latency."""
@@ -77,7 +76,6 @@ class DocumentService:
     def translator(self):
         if self._translator is None:
             print("Loading Translator (NLLB)...")
-            # Quantization support for 8-bit if using GPU
             model_kwargs = {"load_in_8bit": True} if self.device == "cuda" else {}
             device_args = {"device_map": "auto"} if self.device == "cuda" else {"device": -1}
             self._translator = pipeline("translation", 
@@ -155,7 +153,6 @@ class DocumentService:
             raise HTTPException(status_code=500, detail="Error processing DOCX file.")
 
     def detect_lang(self, text):
-        # Only use first 1000 chars for language detection to be fast and avoid limits
         sample = text[:1000]
         result = self.lang_detector(sample, truncation=True)
         return result[0]['label']
@@ -171,17 +168,14 @@ class DocumentService:
     def summarize_long_text(self, text):
         chunks = self.chunk_text(text)
         
-        # Step 1: Summarize each chunk
         chunk_summaries = []
         for chunk in chunks:
             prompt = f"Summarize this document segment: {chunk}"
             result = self.summarizer(prompt, max_length=150, truncation=True)
             chunk_summaries.append(result[0]['generated_text'])
             
-        # Step 2: If multiple chunks, summarize the combined summaries
         if len(chunk_summaries) > 1:
             combined_summary = " ".join(chunk_summaries)
-            # Ensure combined summary isn't too long for the final pass
             if len(combined_summary.split()) > 400:
                 combined_summary = " ".join(combined_summary.split()[:400])
             
@@ -192,7 +186,6 @@ class DocumentService:
         return chunk_summaries[0] if chunk_summaries else ""
 
     def classify_document(self, text):
-        # Only use the first chunk for classification as it usually contains the document header/intent
         chunks = self.chunk_text(text)
         if not chunks:
             return "Unknown"
@@ -218,27 +211,22 @@ class DocumentService:
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported file format: {ext}")
 
-        # Safety truncation
         if len(text) > self.MAX_INPUT_CHARS:
             text = text[:self.MAX_INPUT_CHARS]
 
         if not text.strip():
             raise HTTPException(status_code=400, detail="Could not extract any text from the document.")
 
-        # Language Detection
         detected_lang_code = await run_in_threadpool(self.detect_lang, text)
         src_nllb_lang = self.lang_map.get(detected_lang_code, "eng_Latn")
         
-        # Translation to English if needed
         text_en = text
         if detected_lang_code != "en":
             text_en = await run_in_threadpool(self.translate_long_text, text, src_nllb_lang, "eng_Latn")
 
-        # Summarization and Classification
         summary_en = await run_in_threadpool(self.summarize_long_text, text_en)
         doc_type = await run_in_threadpool(self.classify_document, text_en)
 
-        # Translate summary back to original language if it wasn't English
         summary = summary_en
         if detected_lang_code != "en" and detected_lang_code in self.lang_map:
             summary = await run_in_threadpool(self.translate_long_text, summary_en, "eng_Latn", src_nllb_lang)

@@ -1,3 +1,0 @@
-# INDEMNIFICATION AGREEMENT
-
-The Indemnitor agrees to indemnify, defend, and hold harmless the Indemnitee from and against any and all claims, damages, liabilities, costs, and expenses (including reasonable attorneys’ fees) arising out of or related to the Indemnitor’s breach of any representation, warranty, or covenant contained herein, or any negligent act or omission by the Indemnitor or its agents, employees, or contractors. This obligation to indemnify shall survive the termination or expiration of this Agreement and shall remain in full force and effect indefinitely. Furthermore, the Indemnitee shall have the right to select counsel of its own choosing to defend against any such claim or action, and the Indemnitor shall bear all costs associated with such defense.
