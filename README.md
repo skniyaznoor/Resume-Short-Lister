@@ -63,13 +63,31 @@ npm run dev
 docker-compose up --build
 ```
 
-## 🧠 How it Works
+## 🧠 Full System Flow
 
-1. **Input**: User uploads a document (PDF, DOCX, or Image).
-2. **Text Extraction**: The system extracts text using direct parsing (PyMuPDF/python-docx) or OCR (TrOCR/pdf2image).
-3. **Language Detection & Translation**: Detects the source language. If non-English, it translates it to English for processing.
-4. **Summarization & Classification**: Analyzes the English text to generate a summary and determine document type.
-5. **Output**: The summary is translated back to the original language (if applicable) and returned alongside the extracted text and document type.
+The project is built with a modern Next.js frontend and a high-performance FastAPI backend, working together to provide seamless document analysis.
+
+### 🖥️ Frontend Flow (Next.js React App)
+1. **User Interface**: The user accesses the web interface built with React and styled with Tailwind CSS.
+2. **File Upload**: The user uploads a document (PDF, DOCX, JPEG, PNG) through the interactive upload area.
+3. **API Request**: The frontend sends a `multipart/form-data` POST request with the file to the backend's `/analyze` endpoint.
+4. **Loading State**: The UI displays a loading indicator while the backend processes the file.
+5. **Results Display**: Upon receiving the response, the UI dynamically renders the Document Type, Detected Language, AI Summary, and Full Extracted Text.
+6. **Export**: Users can click "Download" to export the entire analysis as a formatted `.txt` file directly from their browser.
+
+### ⚙️ Backend Flow (FastAPI + Transformers)
+1. **Request Handling**: The `/analyze` endpoint receives the file, saves it temporarily to the `uploads/` directory, and invokes the `DocumentService`.
+2. **Intelligent Text Extraction**:
+   - **Images**: Processed via Microsoft's `trocr-base-printed` for OCR text extraction.
+   - **DOCX**: Extracts text directly using `python-docx`.
+   - **PDFs**: Attempts direct extraction using `PyMuPDF` (fitz). If a page has minimal text (like scanned PDFs), it converts the page to an image and falls back to TrOCR extraction.
+3. **Language Detection**: `xlm-roberta-base-language-detection` analyzes the extracted text to determine the source language.
+4. **Translation Pipeline**: If the document is not in English, Facebook's `nllb-200-distilled-600M` translates the text into English to standardize processing.
+5. **Summarization & Classification**:
+   - **Summarization**: Google's `flan-t5-base` summarizes the English text. Long texts are chunked, summarized individually, and then combined.
+   - **Classification**: Facebook's `bart-large-mnli` performs zero-shot classification to categorize the document type (e.g., Form, Letter, Legal Document, Invoice).
+6. **Reverse Translation**: If the original document was non-English, the generated summary is translated back into the original language.
+7. **Cleanup & Response**: The temporary file is securely deleted, and the backend returns a JSON payload with all the analysis results back to the frontend.
 
 ## ⚖️ License
 MIT
