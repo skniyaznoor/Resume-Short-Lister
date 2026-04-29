@@ -67,28 +67,17 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white">
-              DocIntel AI
+              Resume ShortLister AI
             </h1>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Multilingual Document Analyzer</p>
           </div>
-        </div>
-        
-        <div className="hidden md:flex items-center space-x-6">
-          <a href="#" className="text-xs font-medium text-slate-400 hover:text-white transition-colors">How it works</a>
-          <a href="#" className="text-xs font-medium text-slate-400 hover:text-white transition-colors">Supported Languages</a>
-          <div className="h-4 w-[1px] bg-white/10" />
-          <button className="text-xs font-semibold px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all">
-            History
-          </button>
         </div>
       </header>
 
       <div className="flex-1 relative z-10 overflow-y-auto px-6 py-12 custom-scrollbar">
         <div className="max-w-4xl mx-auto space-y-12">
-          {/* Hero Section */}
           <HeroSection />
 
-          {/* Upload Section */}
           <UploadArea 
             file={file} 
             loading={loading} 
